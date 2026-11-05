@@ -6,6 +6,7 @@
 #include "esp_mac.h"
 #include "esp_random.h"
 #include "protocol.h"
+#include "board_config.h"
 static protocol_t protocol;
 static char device[32], session[33];
 static void output(const char *s, size_t n, void *ctx) {

@@ -1,6 +1,7 @@
 **/build/
 .gradle/
 local.properties
+android/.idea/
 __pycache__/
 firmware/managed_components/
 firmware/sdkconfig

@@ -1,7 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-feature android:name="android.hardware.usb.host" android:required="true" />
-    <application android:theme="@android:style/Theme.Material.NoActionBar" android:label="FunkOffner" android:allowBackup="false" android:fullBackupContent="false" android:supportsRtl="true">
+    <application android:theme="@android:style/Theme.Material.NoActionBar" android:label="@string/app_name" android:icon="@drawable/ic_gate" android:allowBackup="false" android:fullBackupContent="false" android:supportsRtl="true">
         <activity android:name=".MainActivity" android:exported="true">
+            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity>
+        <activity android:name=".OpenGateActivity" android:label="@string/open_gate"
+            android:exported="true" android:excludeFromRecents="true">
             <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
         </activity>
     </application>

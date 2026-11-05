@@ -1,0 +1,10 @@
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="open_gate"
+        android:shortcutShortLabel="@string/open_gate"
+        android:icon="@drawable/ic_gate"
+        android:enabled="true">
+        <intent android:action="android.intent.action.VIEW"
+            android:targetPackage="ch.funkoffner"
+            android:targetClass="ch.funkoffner.OpenGateActivity" />
+    </shortcut>
+</shortcuts>

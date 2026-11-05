@@ -32,7 +32,32 @@ static void reply(protocol_t *p, const char *id, const char *cmd, const char *er
     if (s) { emit(s, strlen(s), ctx); emit("\n", 1, ctx); free(s); }
     cJSON_Delete(r);
 }
+/* Validate escaped code points before cJSON can decode embedded NUL bytes.
+ * Skip escaped backslashes so literal text such as "\\\\u0000" stays valid. */
+static bool escaped_ascii_only(const char *line, size_t length) {
+    for (size_t i = 0; i < length; i++) {
+        if (line[i] != '\\' || i + 1 >= length) continue;
+        i++;
+        if (line[i] != 'u' || i + 4 >= length) continue;
+        unsigned value = 0;
+        bool valid = true;
+        for (size_t j = 1; j <= 4; j++) {
+            unsigned char c = (unsigned char)line[i + j];
+            unsigned digit;
+            if (c >= '0' && c <= '9') digit = c - '0';
+            else if (c >= 'a' && c <= 'f') digit = c - 'a' + 10;
+            else if (c >= 'A' && c <= 'F') digit = c - 'A' + 10;
+            else { valid = false; break; }
+            value = value * 16 + digit;
+        }
+        if (valid && (value == 0 || value > 127)) return false;
+    }
+    return true;
+}
 static void handle(protocol_t *p, protocol_emit emit, void *ctx) {
+    if (!escaped_ascii_only(p->line, p->used)) {
+        reply(p, NULL, NULL, "FRAME_INVALID", emit, ctx); return;
+    }
     const char *end = NULL;
     cJSON *r = cJSON_ParseWithLengthOpts(p->line, p->used + 1, &end, 1);
     if (!r || !cJSON_IsObject(r)) {

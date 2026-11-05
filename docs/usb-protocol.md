@@ -7,7 +7,10 @@ mehrere Zeilen pro Empfang sind zulässig. Unvollständige Zeilen bewirken nicht
 Überlange Zeilen werden bis LF verworfen; danach ist der Parser wieder bereit.
 
 Die erste Stufe akzeptiert ausschliesslich ASCII (gültige UTF-8-Teilmenge), keine
-NUL-Bytes. Namen und Profile sind noch nicht implementiert. Unicode-Erweiterung
+NUL-Bytes. Das gilt auch für JSON-Escapes in Werten und Schlüsseln:
+`\u0000` und Codepunkte oberhalb `\u007f` werden vor der JSON-Dekodierung
+mit `FRAME_INVALID` und `id=null` abgelehnt. ASCII-Escapes und wörtliche,
+maskierte Backslashes bleiben erlaubt. Namen und Profile sind noch nicht implementiert. Unicode-Erweiterung
 benötigt explizite UTF-8- und Escapevalidierung vor Einführung der Profilbefehle.
 
 ```json

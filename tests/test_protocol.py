@@ -28,6 +28,28 @@ class ProtocolTests(unittest.TestCase):
         for raw in [b'{}',b'[]',b'{',b'{} garbage',b'{"v":1,"id":"x","cmd":"HELLO","cmd":"SEND"}', b'\x00',b'\xff']:
             r=exchange(raw+b'\n'+command('STATUS'))
             self.assertIn('error',r[0]); self.assertIn('result',r[1])
+    def test_escaped_non_ascii_and_nul_rejected(self):
+        for field in ['id', 'cmd', 'extra', 'key']:
+            for escaped in [r'\u0000', r'\u0080', r'\u00e4', r'\uD800', r'\uFFFF']:
+                request = dict(v=1, id='test-1', cmd='HELLO')
+                if field == 'key':
+                    request['extra' + escaped] = 'value'
+                else:
+                    request[field] = ('HELLO' if field == 'cmd' else 'x') + escaped
+                raw = json.dumps(request).replace('\\\\u', '\\u').encode()
+                rejected, recovered = exchange(raw + b'\n' + command('STATUS'))
+                self.assertEqual(rejected['error']['code'], 'FRAME_INVALID')
+                self.assertIsNone(rejected['id'])
+                self.assertIn('result', recovered)
+
+    def test_escaped_ascii_and_literal_backslash(self):
+        for request_id in ['literal' + r'\u0000', 'literal' + r'\u00e4']:
+            raw = json.dumps(dict(v=1, id=request_id, cmd='HELLO')).encode()
+            self.assertEqual(exchange(raw + b'\n')[0]['id'], request_id)
+        response = exchange(br'{"v":1,"id":"\u0041","cmd":"HE\u004cLO"}' + b'\n')[0]
+        self.assertEqual(response['id'], 'A')
+        self.assertIn('result', response)
+
     def test_version(self):
         r=exchange(b'{"v":2,"id":"x","cmd":"HELLO"}\n')[0]
         self.assertEqual(r['error']['code'],'VERSION_MISMATCH')
